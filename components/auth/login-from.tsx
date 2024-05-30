@@ -17,12 +17,27 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import FormError from "@/components/form-error";
 import FormSuccess from "@/components/form-success";
-import useSWR from "swr";
 import { getCaptchaCode, login } from "@/lib/api/auth";
 import { useSearchParams } from "next/navigation";
+import { useEffect, useState } from "react";
+
+
 export default function LoginFrom() {
-  const { data } = useSWR("/api/getCaptcha", getCaptchaCode);
+
+  const [captchatId, setCaptchatId] = useState("");
+  const [captchaImg, setCaptchaImg] = useState("");
+  const setCaptcha = () => {
+    const captchaData = getCaptchaCode();
+    captchaData.then((e) => {
+      setCaptchatId(e.data.captchaId);
+      setCaptchaImg(e.data.imageData);
+    })
+  }
   const searchParams = useSearchParams();
+
+  useEffect(() => {
+    setCaptcha();
+  }, [])
 
   const form = useForm<z.infer<typeof LoginSchema>>({
     resolver: zodResolver(LoginSchema),
@@ -36,8 +51,8 @@ export default function LoginFrom() {
   });
 
   const onSubmit = (values: z.infer<typeof LoginSchema>) => {
-    if (data) {
-      values.captchaId = data?.data.captchaId;
+    if (captchatId) {
+      values.captchaId = captchatId;
     }
 
     login(values).then((e) => {
@@ -49,7 +64,6 @@ export default function LoginFrom() {
       }
     });
   };
-
   return (
     <CardWrapper
       headerLabel="欢迎回来"
@@ -92,22 +106,25 @@ export default function LoginFrom() {
               control={form.control}
               name="code"
               render={({ field }) => (
-                <FormItem>
+                <FormItem >
                   <FormLabel>验证码</FormLabel>
                   <FormControl>
                     <div className="flex flex-row gap-x-4">
                       <Input {...field} type="text" className="basis-3/5" />
-                      {data ? (
-                        <Image
-                          className="basis-2/5"
-                          src={data.data.imageData}
-                          width={130}
-                          height={34}
-                          alt="验证码"
-                        />
-                      ) : (
-                        <></>
-                      )}
+                      <div onClick={setCaptcha}>
+                        {captchaImg ? (
+                          <Image
+                            className="basis-2/5"
+                            src={captchaImg}
+                            width={130}
+                            height={34}
+                            alt="验证码"
+                          />
+                        ) : (
+                          <></>
+                        )}
+                      </div>
+
                     </div>
                   </FormControl>
                   <FormMessage />
