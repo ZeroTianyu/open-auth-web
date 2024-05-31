@@ -24,12 +24,12 @@ import { useEffect, useState } from "react";
 
 export default function LoginFrom() {
 
-  const [captchatId, setCaptchatId] = useState("");
+  const [captchaId, setCaptchaId] = useState("");
   const [captchaImg, setCaptchaImg] = useState("");
   const setCaptcha = () => {
     const captchaData = getCaptchaCode();
     captchaData.then((e) => {
-      setCaptchatId(e.data.captchaId);
+      setCaptchaId(e.data.captchaId);
       setCaptchaImg(e.data.imageData);
     })
   }
@@ -51,8 +51,8 @@ export default function LoginFrom() {
   });
 
   const onSubmit = (values: z.infer<typeof LoginSchema>) => {
-    if (captchatId) {
-      values.captchaId = captchatId;
+    if (captchaId) {
+      values.captchaId = captchaId;
     }
 
     login(values).then((e) => {
